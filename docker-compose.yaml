@@ -1,0 +1,18 @@
+services:
+  pgdatabase:
+    image: postgres:15.1
+    env_file: .env
+    ports:
+      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
+    volumes:
+      - "./ny_taxi_postgres_data:/var/lib/postgresql/data:rw"
+  datapipeline:
+    image: python:3.9.1
+    depends_on:
+      pgdatabase:
+        condition: service_started
+    working_dir: /pipeline
+    volumes:
+      - ./pipeline:/pipeline
+    env_file: .env
+    command: bash -c "pip install -r requirements.txt && python pipeline.py"
