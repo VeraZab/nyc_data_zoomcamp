@@ -15,10 +15,13 @@ def env_vars_loaded():
     
     return False
     
-def clean_data(data):
-        data.tpep_pickup_datetime = pd.to_datetime(data.tpep_pickup_datetime)
-        data.tpep_dropoff_datetime = pd.to_datetime(data.tpep_dropoff_datetime)
-        data.store_and_fwd_flag = data.store_and_fwd_flag.map({"Y": True, "N": False})
+def clean_and_insert_data(data, engine):
+    POSTGRES_TABLE = os.getenv("POSTGRES_TABLE")
+
+    data.tpep_pickup_datetime = pd.to_datetime(data.tpep_pickup_datetime)
+    data.tpep_dropoff_datetime = pd.to_datetime(data.tpep_dropoff_datetime)
+    data.store_and_fwd_flag = data.store_and_fwd_flag.map({"Y": True, "N": False})
+    data.to_sql(name=POSTGRES_TABLE, con=engine, if_exists='append')
 
 def load_nyc_taxi_data():
     POSTGRES_USER = os.getenv("POSTGRES_USER")
@@ -29,14 +32,20 @@ def load_nyc_taxi_data():
     POSTGRES_PORT = os.getenv("POSTGRES_PORT")
     DATASET_URL = os.getenv("DATASET_URL")
 
-    data = pd.read_csv(DATASET_URL, nrows=100)
-    clean_data(data)
-
     engine = create_engine(f'postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}')
+    iterator = pd.read_csv(DATASET_URL, iterator=True, chunksize=100000)
+    data = next(iterator)
     data.head(n=0).to_sql(name=POSTGRES_TABLE, con=engine, if_exists='replace')
-    data.to_sql(name=POSTGRES_TABLE, con=engine, if_exists='append')
+    clean_and_insert_data(data, engine)
     
-
+    while True:
+        try:        
+            data = next(iterator)
+            clean_and_insert_data(data, engine)
+        except StopIteration:
+            print("Finished ingesting data into the postgres database")
+            break
+    
 if __name__ == "__main__":
     if env_vars_loaded():
         load_nyc_taxi_data()
