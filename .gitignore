@@ -1,3 +1,13 @@
-.env
+# virtual env
 venv
+
+# env vars
+.env
+
+# db volume
 ny_taxi_postgres_data
+
+# terraform
+.terraform
+.terraform.lock.hcl
+variables.tf
