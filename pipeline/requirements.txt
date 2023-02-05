@@ -1,4 +1,4 @@
 pandas
 prefect
-psycopg2
-prefect-sqlalchemy
+prefect-gcp[cloud_storage]
+pyarrow

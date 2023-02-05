@@ -7,6 +7,9 @@ venv
 # db volume
 ny_taxi_postgres_data
 
+# parquet files
+data
+
 # terraform
 .terraform
 .terraform.lock.hcl
