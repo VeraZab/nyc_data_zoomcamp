@@ -1,3 +1,4 @@
 pandas
-sqlalchemy
+prefect
 psycopg2
+prefect-sqlalchemy
