@@ -1,4 +1,3 @@
-import os
 import pandas as pd
 
 from datetime import timedelta
@@ -55,9 +54,9 @@ def load_gcs(path):
     return
 
 
-@flow(name="ETL Taxi Data")
+@flow(name="Web to GCP: Monthly Subflow")
 def etl(month="01", year="2020", color="green"):
-    """This is the main flow"""
+    """This is the main subflow for a given month"""
 
     file_name = f"{color}_tripdata_{year}-{month}"
     data_url = f"https://github.com/DataTalksClub/nyc-tlc-data/releases/download/{color}/{file_name}.csv.gz"
@@ -67,5 +66,13 @@ def etl(month="01", year="2020", color="green"):
     load_gcs(path)
 
 
+@flow(name="Web to GCP")
+def main(months=["01"], year="2020", color="green"):
+    """Main flow from GCS to Big Query"""
+
+    for month in months:
+        etl(month, year, color)
+
+
 if __name__ == "__main__":
-    etl(month="01", year="2020", color="green")
+    main(months=["11"], year="2020", color="green")
