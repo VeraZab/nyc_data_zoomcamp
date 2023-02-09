@@ -18,30 +18,12 @@ def extract_data(data_url):
     return pd.read_csv(data_url)
 
 
-@task(
-    log_prints=True,
-)
-def transform_data(data, color):
-    """Cleaning columns"""
-
-    if color == "green":
-        data.lpep_pickup_datetime = pd.to_datetime(data.lpep_pickup_datetime)
-        data.lpep_dropoff_datetime = pd.to_datetime(data.lpep_dropoff_datetime)
-    elif color == "yellow":
-        data.tpep_pickup_datetime = pd.to_datetime(data.tpep_pickup_datetime)
-        data.tpep_dropoff_datetime = pd.to_datetime(data.tpep_dropoff_datetime)
-
-    data.store_and_fwd_flag = data.store_and_fwd_flag.map({"Y": True, "N": False})
-    print(f"rows: {len(data)}")
-    return data
-
-
 @task()
-def load_locally(data, color, file_name):
+def load_locally(data, file_name):
     """Loading up to local storage as parquet file"""
 
-    path = Path(f"data/{color}/{file_name}.parquet")
-    data.to_parquet(path, compression="gzip")
+    path = Path(f"data/fhv/{file_name}.csv.gz")
+    data.to_csv(path, compression="gzip")
     return path
 
 
@@ -55,24 +37,26 @@ def load_gcs(path):
 
 
 @flow(name="Web to GCP: Monthly Subflow")
-def etl(month="01", year="2020", color="green"):
+def etl(month, year):
     """This is the main subflow for a given month"""
 
-    file_name = f"{color}_tripdata_{year}-{month}"
-    data_url = f"https://github.com/DataTalksClub/nyc-tlc-data/releases/download/{color}/{file_name}.csv.gz"
+    file_name = f"fhv_tripdata_{year}-{month}"
+    data_url = f"https://github.com/DataTalksClub/nyc-tlc-data/releases/download/fhv/fhv_tripdata_{year}-{month}.csv.gz"
     extracted_data = extract_data(data_url)
-    transformed_data = transform_data(extracted_data, color)
-    path = load_locally(transformed_data, color, file_name)
+    path = load_locally(extracted_data, file_name)
     load_gcs(path)
 
 
 @flow(name="Web to GCP")
-def main(months=["01"], year="2020", color="green"):
+def main(months=["01"], year="2020"):
     """Main flow from GCS to Big Query"""
 
     for month in months:
-        etl(month, year, color)
+        etl(month, year)
 
 
 if __name__ == "__main__":
-    main(months=["11"], year="2020", color="green")
+    main(
+        months=["02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"],
+        year="2019",
+    )
