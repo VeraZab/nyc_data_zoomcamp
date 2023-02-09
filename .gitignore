@@ -1,3 +1,4 @@
+__pycache__
 .DS_Store
 
 # virtual env
@@ -16,3 +17,6 @@ data
 .terraform
 .terraform.lock.hcl
 variables.tf
+
+# prefect
+*deployment.yaml
