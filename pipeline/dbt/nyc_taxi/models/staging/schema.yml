@@ -1,0 +1,9 @@
+version: 2
+
+sources:
+  - name: staging
+    database: liquid-agility-375815
+    schema: trips_data_all
+    tables:
+      - name: fhv_rides
+      - name: rides

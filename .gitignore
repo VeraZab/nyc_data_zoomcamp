@@ -19,3 +19,13 @@ data
 
 # prefect
 *deployment.yaml
+
+# GCP
+liquid-agility.json
+
+
+# dbt
+target/
+dbt_packages/
+logs/
+.user.yml
