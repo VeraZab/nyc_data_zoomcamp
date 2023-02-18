@@ -3,5 +3,4 @@ pandas-gbq
 prefect
 prefect-gcp[cloud_storage]
 pyarrow
-dbt-core
-dbt-bigquery
+prefect-dbt
